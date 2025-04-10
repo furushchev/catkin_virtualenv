@@ -19,8 +19,8 @@
 # <http://www.gnu.org/licenses/>.
 
 import os
+import platform
 import re
-import subprocess
 
 from . import run_command
 
@@ -106,3 +106,15 @@ def fix_local_symlinks(venv_dir):
         new_target = os.path.relpath(existing_target, local_dir)
         os.unlink(path)
         os.symlink(new_target, path)
+
+
+def delete_incompatible_binaries(path: str):
+    _, linkage = platform.architecture()
+    machine = platform.machine().replace('_', '-')
+    for root, _, files in os.walk(path):
+        for f in files:
+            full_path = os.path.join(root, f)
+            file_result = run_command(
+                ['file', full_path], check=True, capture_output=True, encoding='utf-8').stdout
+            if (linkage in file_result and machine not in file_result):
+                os.unlink(path)

@@ -181,6 +181,12 @@ class Virtualenv:
         relocate.fix_shebangs(self.path, target_dir)
         relocate.fix_activate_path(self.path, target_dir)
 
+        # Debian package generation fails due to the inclusion of binaries
+        # that do not match the intended architecture.
+        # To ensure a successful build process,
+        # these incompatible files are now removed from the installation directory.
+        relocate.delete_incompatible_binaries(self.path)
+
         # This workaround has been flaky - let's just delete the 'local' folder entirely
         # relocate.fix_local_symlinks(self.path)
         local_dir = os.path.join(self.path, "local")
